@@ -15,6 +15,62 @@ Command parameters:
 - resume: resume previous execution
 - output: output filename (default is output.json)
 
+## Output
+
+Output is stored in a json file like this:
+
+`{
+ "urls": [
+  {
+   "url": "http://chipiwini.com/plato",
+   "completed": true,
+   "error": 0,
+   "links": [
+    "http://chipiwini.com/plato/second_page.php",
+    "http://chipiwini.COM/plato/tres.php",
+    "http://chipiWini.com/plato/tres"
+   ]
+  },
+  {
+   "url": "http://chipiwini.com/plato/second_page.php",
+   "completed": true,
+   "error": 2,
+   "links": null
+  },
+  {
+   "url": "http://chipiwini.COM/plato/tres.php",
+   "completed": true,
+   "error": 0,
+   "links": [
+    "http://chipiwini.com/plato/four.php"
+   ]
+  },
+  {
+   "url": "http://chipiWini.com/plato/tres",
+   "completed": true,
+   "error": 0,
+   "links": [
+    "http://chipiwini.com/plato/four.php"
+   ]
+  },
+  {
+   "url": "http://chipiwini.com/plato/four.php",
+   "completed": true,
+   "error": 0,
+   "links": [
+    "http://chipiwini.com/plato",
+    "http://chipiwini.com/plato/img.jpg"
+   ]
+  },
+  {
+   "url": "http://chipiwini.com/plato/img.jpg",
+   "completed": true,
+   "error": 3,
+   "links": null
+  }
+ ]
+}`
+
 ## What's next?
 
 Possible improvements:
@@ -25,3 +81,4 @@ Possible improvements:
 - Default output filename based on initial url, not just "output.json".
 - Ask for output overwrite, and add parameter -force for not asking.
 - Add maximum parameter, based on max urls to walk to, or maximum depth.
+- Improve the resume feature.
