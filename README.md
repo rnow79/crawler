@@ -89,7 +89,7 @@ The json file will store an array of unique urls, containing:
 
 Note that links can be present in two or more urls, but urls are unique.
 
-## When to tool stops
+## When the tool stops
 
 The tool will end in the following situations:
 
