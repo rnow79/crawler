@@ -1,6 +1,6 @@
 # Plato Test: Web-Crawler
 
-This is basic a command-line tool written in Go. You must provide the first url, then the tool gets the page and look for links inside the document. All links will be saved, but only the links inside the initial url will be recursively fetched. The fecth function is async, so many request can be made simultaneously.
+This is a basic command-line tool written in Go. You must provide the first url, then the tool gets the page and look for links inside the document. All links will be saved, but only the links inside the initial url will be recursively fetched. The fecth function is async, so many request can be made simultaneously.
 
 Very simple first usage:
 
@@ -87,14 +87,14 @@ The json file will store an array of unique urls, containing:
     - 4: there was an error parsing the html code
 - **links**: array of links on the webpage
 
-Note that links can be present in two or more urls, but urls are unique.
+Note that links can be repeated across urls, but urls are unique.
 
 ## When the tool stops
 
 The tool will end in the following situations:
 
-- All urls complete field are set.
-- User press Ctrl+C. In this particular situation, the data will be saved in a file named *working.js*. In order to run again the tool, you have to set the -resume flag in command line parameters, or delete *working.js* file.
+- All urls complete field are set, so there is no more webpages to fetch.
+- User press Ctrl+C. In this particular situation, the data will be saved in a file named *working.js*. In order to run again the tool, you have to set the -resume flag in command line parameters, or delete *working.js* file and start the process again.
 
 ## What's next?
 
