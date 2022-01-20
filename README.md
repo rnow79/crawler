@@ -19,13 +19,16 @@ Command parameters:
 
 Output is stored in a json file like this:
 
-`{``"urls": [
+```
+{
+ "urls": [
   {
    "url": "http://chipiwini.com/plato",
    "completed": true,
    "error": 0,
    "links": [
     "http://chipiwini.com/plato/second_page.php",
+    "javscript:void();",
     "http://chipiwini.COM/plato/tres.php",
     "http://chipiWini.com/plato/tres"
    ]
@@ -34,9 +37,64 @@ Output is stored in a json file like this:
    "url": "http://chipiwini.com/plato/second_page.php",
    "completed": true,
    "error": 2,
-   "links": null 
+   "links": null
+  },
+  {
+   "url": "http://chipiwini.COM/plato/tres.php",
+   "completed": true,
+   "error": 0,
+   "links": [
+    "http://chipiwini.com/plato/four.php"
+   ]
+  },
+  {
+   "url": "http://chipiWini.com/plato/tres",
+   "completed": true,
+   "error": 0,
+   "links": [
+    "http://chipiwini.com/plato/four.php"
+   ]
+  },
+  {
+   "url": "http://chipiwini.com/plato/four.php",
+   "completed": true,
+   "error": 0,
+   "links": [
+    "http://chipiwini.com/plato",
+    "http://chipiwini.com/plato/img.jpg"
+   ]
+  },
+  {
+   "url": "http://chipiwini.com/plato/img.jpg",
+   "completed": true,
+   "error": 3,
+   "links": null
+  }
  ]
-}```
+}
+
+```
+
+The json file will store an array of unique urls, containing:
+
+- url: its location
+- completed: was the url fetched?
+- error:
+    - 0: no error
+    - 1: error getting url (no such domain, etc)
+    - 2: response code is not 200
+    - 3: the document content type is not "text/html"
+    - 4: there was an error parsing the html code
+- links: array of links on the webpage
+
+Note that links can be present in two or more urls, but urls are unique.
+
+## When to tool stops
+
+The tool will end in the following situations:
+
+- All urls complete field are set.
+- User press Ctrl+C. In this particular situation, the data will be saved in a file named *working.js*. In order to run again the tool, you have to set the -resume flag in command line parameters, or delete *working.js* file.
 
 ## What's next?
 
