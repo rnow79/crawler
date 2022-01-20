@@ -4,7 +4,7 @@ This is basic a command-line tool written in Go. You must provide the first url,
 
 Very simple first usage:
 
-`go run crawler.go -url=http://www.example.com/test -output=example.json`
+`go run crawler.go -url='http://www.example.com/test' -output='example.json'`
 
 ## Syntax
 
