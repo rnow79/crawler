@@ -116,7 +116,7 @@ func fetchUrl(id int, u string) {
 	logLine(id, "%s url %s", action, u)
 	response, err := http.Get(u)
 	if err != nil {
-		completeUrl(id, 1) // Error 1 => Probably network related (No such domain, unable to connect)
+		completeUrl(id, 1) // Error 1 => Probably network related (dns, unable to connect...)
 		return
 	}
 	if response.StatusCode != 200 {
@@ -197,9 +197,15 @@ func main() {
 	outputFile = flag.String("output", "output.json", "Output filename")
 
 	flag.Parse()
+
+	if strings.EqualFold(*outputFile, workingFile) {
+		log.Fatal("Please use other output filename, since ", workingFile, " is reserved")
+	}
+
 	if len(*initialUrl) == 0 && !*resume {
 		log.Fatal("No initial url provided, only allowed when resuming")
 	}
+
 	if *verbose {
 		log.Println("Resume:", *resume)
 		log.Println("InitialURL:", *initialUrl)
