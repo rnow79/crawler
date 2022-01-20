@@ -77,15 +77,15 @@ Output is stored in a json file like this:
 
 The json file will store an array of unique urls, containing:
 
-- url: its location
-- completed: was the url fetched?
-- error:
+- **url**: its location
+- **completed**: was the url fetched?
+- **error**:
     - 0: no error
     - 1: error getting url (no such domain, etc)
     - 2: response code is not 200
     - 3: the document content type is not "text/html"
     - 4: there was an error parsing the html code
-- links: array of links on the webpage
+- **links**: array of links on the webpage
 
 Note that links can be present in two or more urls, but urls are unique.
 
