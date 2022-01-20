@@ -243,7 +243,7 @@ func main() {
 	// Process the incomplete urls (if not resuming, It will be just the first)
 	for index := range urls.URLS {
 		if !urls.URLS[index].Completed {
-			go fetchUrl(index, *initialUrl)
+			go fetchUrl(index, urls.URLS[index].URL)
 		}
 	}
 	for !allDone() {
