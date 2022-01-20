@@ -20,16 +20,16 @@ Command parameters:
 Output is stored in a json file like this:
 
 `{
- "urls": [
-  {
-   "url": "http://chipiwini.com/plato",
-   "completed": true,
-   "error": 0,
-   "links": [
-    "http://chipiwini.com/plato/second_page.php",
-    "http://chipiwini.COM/plato/tres.php",
-    "http://chipiWini.com/plato/tres"
-   ]
+    "urls": [
+        {
+            "url": "http://chipiwini.com/plato",
+            "completed": true,
+            "error": 0,
+            "links": [
+                "http://chipiwini.com/plato/second_page.php",
+                "http://chipiwini.COM/plato/tres.php",
+                "http://chipiWini.com/plato/tres"
+            ]
   },
   {
    "url": "http://chipiwini.com/plato/second_page.php",
