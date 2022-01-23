@@ -1,3 +1,6 @@
+// This is a basic command-line tool written in Go. You must provide the first url, then the tool gets the page
+// and look for links inside the document. All links will be saved, but only the links inside the initial url
+// will be recursively fetched. The fecth function is async, so many request can be made simultaneously.
 package main
 
 import (
