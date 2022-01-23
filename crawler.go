@@ -46,8 +46,8 @@ func newUrl(u string) *Url {
 	return &retUrl
 }
 
-// Prepare a channel and run anonymous asyncronous function. It will be waiting for the os interrupt
-// then saves the links database.
+// Prepare a channel and run anonymous asyncronous function. It will be waiting for the os interrupt,
+// then saves the link database.
 func interruptHandler() {
 	intChan := make(chan os.Signal)
 	signal.Notify(intChan, os.Interrupt, syscall.SIGTERM)
