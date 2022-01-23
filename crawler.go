@@ -235,23 +235,21 @@ func main() {
 	flag.BoolVar(&resume, "resume", false, "Resume last execution")
 	flag.StringVar(&initialUrl, "url", "", "Initial URL to fetch")
 	flag.StringVar(&outputFile, "output", "output.json", "Output filename")
-
 	flag.Parse()
-
+	// Output file cannot be named like working file
 	if strings.EqualFold(outputFile, workingFile) {
 		log.Fatal("Please use other output filename, since ", workingFile, " is reserved")
 	}
-
+	// Check if initial url is present (and not resuming)
 	if len(initialUrl) == 0 && !resume {
 		log.Fatal("No initial url provided, only allowed when resuming")
 	}
-
+	// Print some variables
 	if verbose {
 		log.Println("Resume:", resume)
 		log.Println("InitialURL:", initialUrl)
 		log.Println("OutputFile:", outputFile)
 	}
-
 	// Check if there is previous data
 	_, err := os.Stat(workingFile)
 	if !errors.Is(err, os.ErrNotExist) {
@@ -276,27 +274,23 @@ func main() {
 		first := newUrl(initialUrl)
 		urls.URLS = append(urls.URLS, *first)
 	}
-
-	// Ctrl+C handler
+	// Register Ctrl+C handler
 	interruptHandler()
-
-	// Process the incomplete urls (if not resuming, It will be just the first)
-	for index := range urls.URLS {
-		if !urls.URLS[index].Completed {
-			go fetchUrl(index, urls.URLS[index].URL)
+	// Process the incomplete urls (if not resuming, it will be just the first)
+	for i, u := range urls.URLS {
+		if !u.Completed {
+			go fetchUrl(i, u.URL)
 		}
 	}
+	// Main loop. Since urls are fetched in parallel
 	for !allDone() {
 	}
-
 	// Save to disk
-	if len(urls.URLS) > 0 {
-		file, _ := json.MarshalIndent(urls, "", " ")
-		_ = ioutil.WriteFile(outputFile, file, 0644)
-		_ = os.Remove(workingFile)
-		if verbose {
-			log.Println("All done!")
-			log.Printf("File %s saved with %d URLS.\n", outputFile, len(urls.URLS))
-		}
+	file, _ := json.MarshalIndent(urls, "", " ")
+	_ = ioutil.WriteFile(outputFile, file, 0644)
+	_ = os.Remove(workingFile)
+	if verbose {
+		log.Println("All done!")
+		log.Printf("File %s saved with %d URLS.\n", outputFile, len(urls.URLS))
 	}
 }
