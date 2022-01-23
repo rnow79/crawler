@@ -20,11 +20,23 @@ import (
 	"golang.org/x/net/html"
 )
 
-// Command-Line options
-var verbose bool      // Verbose bit
-var resume bool       // Resume last execution
-var initialUrl string // Initial URL to fetch
-var outputFile string // Name of the output file
+// Name of the file where we'll save our progess if the user interrupts the execution
+const workingFile string = "working.json"
+
+// Command variable: Verbose bit
+var verbose bool
+
+// Command variable: Resume last execution
+var resume bool
+
+// Command variable: Initial URL to fetch
+var initialUrl string
+
+// Command variable: Name of the output file
+var outputFile string
+
+// Main struct for storing urls
+var urls Urls
 
 // Url type
 type Url struct {
@@ -38,10 +50,6 @@ type Url struct {
 type Urls struct {
 	URLS []Url `json:"urls"`
 }
-
-// Variables
-const workingFile string = "working.json" // Name of the file where we'll save our progess if the user interrupts the execution
-var urls Urls                             // Main struct for storing urls
 
 // Returns a new empty Url object
 func newUrl(u string) *Url {
