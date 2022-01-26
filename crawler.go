@@ -16,6 +16,7 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 
 	"golang.org/x/net/html"
 )
@@ -37,6 +38,9 @@ var outputFile string
 
 // Main struct for storing urls.
 var urls Urls
+
+// Numer of goroutines running at the same time.
+const MaxRoutines int = 2
 
 // Url type.
 type Url struct {
@@ -68,8 +72,17 @@ func interruptHandler() {
 		// SIGTERM Received, save our progress and exit!
 		log.Println("Program Stopped by user")
 		// Save to disk.
-		file, _ := json.MarshalIndent(urls, "", " ")
-		_ = ioutil.WriteFile(workingFile, file, 0644)
+		file, err := json.MarshalIndent(urls, "", " ")
+		// Since we Marshal an Url struct, it's really difficult to have here an error,
+		// anyway let's check it.
+		if err != nil {
+			log.Fatal("Error while parsing urls:", err)
+		}
+		// Write to file.
+		err = ioutil.WriteFile(workingFile, file, 0644)
+		if err != nil {
+			log.Fatal("Error writting file to disk:", err)
+		}
 		if verbose {
 			log.Println("Saving working file")
 			log.Printf("Progress saved in working.json (%d urls)\n", len(urls.URLS))
@@ -80,10 +93,18 @@ func interruptHandler() {
 }
 
 // Mark an URL as completed, and save the error code.
-func completeUrl(id int, err int) {
+func completeUrl(id int, err int, main chan int, end chan int) {
 	logLine(id, "process ended with exit code %d.", err)
 	urls.URLS[id].Completed = true
 	urls.URLS[id].Error = err
+	// Tell the channel to start next goroutine in the buffer
+	main <- 1
+	// Give some time for next routine to start
+	time.Sleep(1 * time.Second)
+	// If all data is processed, end
+	if allDone() {
+		end <- 1
+	}
 }
 
 // log.Println if verbose bit is set.
@@ -102,10 +123,23 @@ func validURL(id int, u string) bool {
 		logLine(id, "url %s is not valid", u)
 		return false
 	}
-	// Check ig the url starts like the initial url.
+	// Check if the url starts like the initial url.
 	if !strings.HasPrefix(strings.ToLower(u), strings.ToLower(initialUrl)) {
 		logLine(id, "url %s is not a child of the initial url", u)
 		return false
+	}
+	// If url starts like initialUrl, now we have to check if next rune
+	// of url, skipping initialURL lenght, is / or ?, So if initial us is
+	// http://example.com/test, then:
+	//  - http://example.com/test/page.htm will return true
+	//  - http://example.com/test?id=10 will return true
+	//  - http://example.com/test10 will return false
+	fmt.Printf("[%s]", u)
+	if len(u) > len(initialUrl) {
+		nextrune := u[len(initialUrl)]
+		if nextrune == '/' || nextrune == '?' {
+			return true
+		}
 	}
 	// Finally, check if the url is not already in our database.
 	for url := range urls.URLS {
@@ -128,7 +162,8 @@ func linkExists(link string, links []string) bool {
 }
 
 // This is the funcion we will fire for each url, it will fetch the url and parse the response.
-func fetchUrl(id int, u string) {
+func fetchUrl(id int, u string, mainChannel chan int, endChannel chan int) {
+	//	time.Sleep(1 * time.Second)
 	// Check out if we're in resume mode, just for logging purpuses.
 	action := "fetching"
 	if resume {
@@ -139,24 +174,24 @@ func fetchUrl(id int, u string) {
 	response, err := http.Get(u)
 	if err != nil {
 		// Error 1 => Probably network related (dns, unable to connect...).
-		completeUrl(id, 1)
+		completeUrl(id, 1, mainChannel, endChannel)
 		return
 	}
 	// Error 2 => Response code from http server is not 200.
 	if response.StatusCode != 200 {
-		completeUrl(id, 2)
+		completeUrl(id, 2, mainChannel, endChannel)
 		return
 	}
 	// Error 3 => The document fetched content is not HTML.
 	if !strings.HasPrefix(response.Header.Get("Content-Type"), "text/html") {
-		completeUrl(id, 3)
+		completeUrl(id, 3, mainChannel, endChannel)
 		return
 	}
 	// Error 3 => Error while parsing HTML document.
 	body, err := html.Parse(response.Body)
 	response.Body.Close()
 	if err != nil {
-		completeUrl(id, 4)
+		completeUrl(id, 4, mainChannel, endChannel)
 		return
 	}
 	// Extract links from document.
@@ -197,11 +232,14 @@ func fetchUrl(id int, u string) {
 		if validURL(id, links[link]) {
 			logLine(id, "adding url %s for being processed", links[link])
 			urls.URLS = append(urls.URLS, *newUrl(links[link]))
-			go fetchUrl(len(urls.URLS)-1, links[link])
+			go fetchUrl(len(urls.URLS)-1, links[link], mainChannel, endChannel)
 		}
 	}
 	// Document parsed and all link extracted and evaluated. Mark as completed.
-	completeUrl(id, 0)
+	completeUrl(id, 0, mainChannel, endChannel)
+	if allDone() {
+		endChannel <- 1
+	}
 }
 
 // Recursive function for extract html tags.
@@ -276,15 +314,18 @@ func main() {
 	}
 	// Register Ctrl+C handler.
 	interruptHandler()
+	// mainChannel is a buffered channel, for fetching urls
+	mainChannel := make(chan int, MaxRoutines)
+	// endChannel will waint until all is processed
+	endChannel := make(chan int)
 	// Process the incomplete urls (if not resuming, it will be just the first).
 	for i, u := range urls.URLS {
 		if !u.Completed {
-			go fetchUrl(i, u.URL)
+			go fetchUrl(i, u.URL, mainChannel, endChannel)
 		}
 	}
-	// Main loop. Since urls are fetched in parallel.
-	for !allDone() {
-	}
+	// Wait for goroutines write to endChannel
+	<-endChannel
 	// Save to disk.
 	file, _ := json.MarshalIndent(urls, "", " ")
 	_ = ioutil.WriteFile(outputFile, file, 0644)
